@@ -3,8 +3,7 @@ pipeline {
     stages {
         stage('install') {
             steps {
-                sh """#!/bin/bash   
-                echo hello world"""
+                batch sh "echo Hello World"
             }
         }
     }
