@@ -18,7 +18,7 @@ pipeline {
         }
         stage('Execute: Spring-Cloud-Skipper'){
             steps {
-                sh 'ansible all -m shell -a "cd ~/install_tmp/;java -jar spring-cloud-skipper.jar &"'
+                sh 'ansible all -b -m shell -a "cd ~/install_tmp/;java -jar spring-cloud-skipper.jar &"'
             }
         }
     }
