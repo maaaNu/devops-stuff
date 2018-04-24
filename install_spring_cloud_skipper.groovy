@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('install') {
             steps {
-                sh 'echo Hello World'
+                sh 'ansible all -m ping'
             }
         }
     }
