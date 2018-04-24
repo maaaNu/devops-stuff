@@ -12,7 +12,7 @@ pipeline {
                     sh 'ansible es -m get_url "-a url=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.2.4.rpm dest=~/install_tmp/"'
                     sh 'ansible es -m get_url "-a url=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.2.4.rpm.sha512 dest=~/install_tmp/"'
                     sh 'ansible es -m shell -a "cd ~/install_tmp/;sha512sum -c elasticsearch-6.2.4.rpm.sha512"'
-                    sh 'ansible es -m shell -a "cd ~/install_tmp/;rpm --install elasticsearch-6.2.4.rpm"'
+                    sh 'ansible es -m shell -b -a "cd ~/install_tmp/;rpm --install elasticsearch-6.2.4.rpm"'
                     sh 'ansible es -m shell -b -a "systemctl start elasticsearch.service"'
                 }
             }
