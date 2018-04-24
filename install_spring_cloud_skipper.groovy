@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('install') {
             steps {
-                batch sh "echo Hello World"
+                powershell "curl www.google.de"
             }
         }
     }
