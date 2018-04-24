@@ -3,7 +3,8 @@ pipeline {
     stages {
         stage('install') {
             steps {
-                bat(returnStdout: true, script: "sh 'ansible all -m ping'")
+                sh """#!/bin/bash   
+                echo hello world"""
             }
         }
     }
