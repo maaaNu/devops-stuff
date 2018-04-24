@@ -1,8 +1,10 @@
 pipeline {
     agent any 
     stages {
-        steps {
-            
+        stage('install') {
+            steps {
+                sh 'ansible all -m ping'
+            }
         }
     }
 }
