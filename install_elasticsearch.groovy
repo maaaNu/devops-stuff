@@ -3,12 +3,7 @@ pipeline {
         stages {
             stage('Install: jdk') {
                 steps {
-                    sh 'ansible all -b -m yum -a "name=java-1.8.0-openjdk state=installed"'
-                }
-            }
-            stage('Install: shasum') {
-                steps{
-                    sh 'ansible es -b -m yum -a "name=shasum state=installed"'
+                    sh 'ansible es -b -m yum -a "name=java-1.8.0-openjdk state=installed"'
                 }
             }
             stage('Download: elasticsearch'){
