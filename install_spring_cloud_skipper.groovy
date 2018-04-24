@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('install') {
             steps {
-                sh 'ansible all -m ping'
+                bat(returnStdout: true, script: "sh 'ansible all -m ping'")
             }
         }
     }
