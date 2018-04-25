@@ -1,0 +1,54 @@
+- hosts: "{{ host | default('es') }}"
+  gather_facts: False
+  tasks:
+  - name: Check if you are able to ping the vagrant VM
+    ping:
+
+- hosts: "{{ host | default('es') }}"
+  become: true
+  gather_facts: True
+  vars:
+    jdk_installation_path: '/opt/java/jdk9.0.4'
+    tmp_jdk_path: '/tmp/jdk'
+  tasks:
+   - name: 'Fetch Oracle JDK artefacts'
+     block:
+       - name: 'Create temp directory'
+         file:
+           path: '{{ tmp_jdk_path }}'
+           state: directory
+       - name: 'Download Oracle JDK to temp directory'
+         get_url:
+           url: 'http://download.oracle.com/otn-pub/java/jdk/10.0.1+10/fb4372174a714e6b8c52526dc134031e/jdk-10.0.1_linux-x64_bin.tar.gz'
+           headers: 'Cookie:oraclelicense=accept-securebackup-cookie'
+           dest: '{{ tmp_jdk_path }}'
+         register: download_result
+       - name: 'Set fact "jdk_tar_path" to absolute path of downloaded JDK archive'
+         set_fact:
+           jdk_tar_path: '{{ download_result.dest }}'
+   - name: 'Install Oracle JDK artifacts'
+     block:
+     - name: 'Copy and extract JDK archive'
+       block:
+         - name: 'Create JDK installation directory {{ jdk_installation_path }}'
+           file:
+             path: '{{ jdk_installation_path }}'
+             state: directory
+         - name: 'Extract JDK tar archive'
+           raw: '/bin/tar -xzf {{ jdk_tar_path }} --strip-components=1 -C {{ jdk_installation_path }}'
+         - name: 'Cleanup downloaded JDK'
+           file:
+             path: '{{ tmp_jdk_path }}'
+             state: absent
+   - name: 'Set JAVA_HOME and PATH'
+     block:
+     - name: 'Set JAVA_HOME'
+       lineinfile:
+         path:     '/etc/profile'
+         regexp:   '^export JAVA_HOME=.*'
+         line:     'export JAVA_HOME={{ jdk_installation_path }}'
+     - name: 'Set JAVA_HOME'
+       lineinfile:
+         path:     '/etc/profile'
+         regexp:   '^export PATH=.*'
+         line:     'export PATH=$PATH:$JAVA_HOME/bin'

@@ -1,0 +1,34 @@
+- hosts: "{{ host | default('dev') }}"
+  gather_facts: False
+  tasks:
+  - name: Check if you are able to ping the host
+    ping:
+
+- hosts: "{{ host | default('dev') }}"
+  become: true
+  gather_facts: True
+  tasks:
+  - name: 'Get Java Home'
+    shell: grep -n "export JAVA_HOME" /etc/profile
+    register: JAVA_HOME
+
+- hosts: "{{ host | default('dev') }}"
+  become: true
+  gather_facts: True
+  vars:
+    jar_name: 'my.jar'
+    repo_dir: '~/jar-repository'
+  tasks:
+    block:
+      - name: create a directory to save jars
+        file:
+           path: '{{ repo_dir }}'
+           state: directory
+
+      - name: copy jar to host
+        copy:
+          src: 'path/to/{{ jar_name }}'
+          dest: {{ repo_dir }}/{{ jar_name }}
+          owner: root
+          group: root
+          mode: 0644

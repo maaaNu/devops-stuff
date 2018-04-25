@@ -1,0 +1,65 @@
+- hosts: "{{ host | default('es') }}"
+  gather_facts: False
+  tasks:
+  - name: Check if you are able to ping the host
+    ping:
+
+- hosts: "{{ host | default('es') }}"
+  become: true
+  gather_facts: True
+  tasks:
+  - name: 'Get Java Home'
+    shell: grep -n "export JAVA_HOME" /etc/profile
+    register: JAVA_HOME 
+  
+- hosts: "{{ host | default('es') }}"
+  become: true
+  gather_facts: True
+  vars:
+    component_name: 'elasticsearch'
+    name_suffix: ''
+    version: '6.2.4'
+    tmp_install_directory: '~/install_tmp'
+  tasks:
+  - name: download and start a component of the elk stack
+    block:
+      - name: 'create tmp directory'
+        file:
+          path: '{{ tmp_install_directory }}'
+          state: directory
+      
+      - name: 'construct filename'
+        set_fact:
+          file: '{{ component_name }}-{{ version }}{{ name_suffix }}.rpm'
+      
+      - name: 'download the component from artifacts.elastic.co'
+        get_url:
+          url: 'https://artifacts.elastic.co/downloads/{{ component_name }}/{{ file }}'
+          dest: '{{ tmp_install_directory }}/{{ file }}'
+        register: download_file
+      
+      - name: 'download the sha512 from artifacts.elastic.co'
+        get_url:
+          url: 'https://artifacts.elastic.co/downloads/{{ component_name }}/{{ file }}.sha512'
+          dest: '{{ tmp_install_directory }}/{{ file }}'
+        register: download_sha
+      
+      - name: 'check sha sum'
+        shell: cd ~/install_tmp/;sha512sum -c {{ file }}.sha512
+        when: download_file.changed or download_sha.changed
+      
+      - name: 'install component'
+        shell: cd ~/install_tmp/;rpm --install {{ file }}
+        register: out
+        ignore_errors: yes
+      - fail: msg="{{ out.stdout }}"
+        when: out.rc != 1 and out.rc != 0
+      
+      - name: 'start service'
+        shell: systemctl start {{ component_name }}.service
+        when: '"logstash" not in component_name'
+      
+      - name: 'start logstash'
+        shell: cd /usr/share/logstash;bin/logstash
+        when: '"logstash" in component_name'
+    when: JAVA_HOME|length > 0

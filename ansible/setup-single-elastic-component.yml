@@ -1,0 +1,46 @@
+- hosts: "{{ target | default('es') }}"
+  gather_facts: False
+  tasks:
+  - name: Check if you are able to ping the host
+    ping:
+
+- hosts: "{{ target | default('es') }}"
+  become: true
+  gather_facts: True
+  tasks:
+  - name: 'Get Java Home'
+    shell: grep -n "export JAVA_HOME" /etc/profile
+    register: JAVA_HOME 
+  
+- hosts: "{{ target | default('es') }}"
+  become: true
+  gather_facts: True
+  vars:
+    version: '6.2.4'
+    tmp_install_directory: '~/install_tmp'
+  tasks:
+  - name: download and start a component of the elk stack
+    block:
+      - name: import gpg-key
+        rpm_key:
+          state: present
+          key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+      
+      - name: copying repo - file
+        copy:
+          src: '{{ target }}.repo'
+          dest: /etc/yum.repos.d/
+          owner: root
+          group: root
+          mode: 0644
+      
+      - name: install component
+        yum:
+          name: '{{ target }}-{{ version }}'
+          state: present
+      
+      - name: reload service 
+        systemd:
+          name: '{{ target }}.service'
+          state: reloaded
+    when: JAVA_HOME|length > 0
