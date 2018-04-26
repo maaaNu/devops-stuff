@@ -9,26 +9,47 @@
   gather_facts: True
   tasks:
   - name: 'Get Java Home'
-    shell: grep -n "export JAVA_HOME" /etc/profile
+    shell:  grep -n "export JAVA_HOME" /etc/profile | cut -d '=' -f2
     register: JAVA_HOME
 
 - hosts: "{{ target | default('dev') }}"
-  become: true
+  become: True
   gather_facts: True
   vars:
+    opt_param: ''
     jar_name: 'my.jar'
     repo_dir: '~/jar-repository'
   tasks:
-    block:
+  - name: deploy a java application
+    block: 
+      - name: construct optional parameters
+        set_fact: 
+          opt_param: "--server.port={{ app_port }} "
+        when: app_port is defined
+
       - name: create a directory to save jars
         file:
-           path: '{{ repo_dir }}'
-           state: directory
+          path: '{{ repo_dir }}'
+          state: directory
 
       - name: copy jar to host
         copy:
-          src: 'path/to/{{ jar_name }}'
-          dest: {{ repo_dir }}/{{ jar_name }}
-          owner: root
-          group: root
+          src: '{{ jar_name }}'
+          dest: '{{ repo_dir }}/{{ jar_name }}'
+          owner: vagrant
+          group: vagrant
           mode: 0644
+      
+      - name: read pid from file
+        shell: "cd {{ repo_dir }};cat .pid"
+        register: PID 
+      
+      - name: kill process by pid
+        shell: "kill {{ PID.stdout }}"
+      
+      - name: remove pid file
+        shell: "cd {{ repo_dir }}; rm -f .pid"
+        ignore_errors: True
+
+      - name: start jar
+        shell: "cd {{ repo_dir }}; nohup {{ JAVA_HOME.stdout }}/bin/java -jar {{ jar_name }} {{ opt_param }} & echo $! >> .pid"
