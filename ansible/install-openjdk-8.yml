@@ -1,0 +1,10 @@
+- hosts: "{{ target | default('dev') }}"
+  become: true
+  gather_facts: True
+  vars:
+    version: '1.8.0'
+  tasks:
+  - name: install component
+      yum:
+        name: 'java-{{ version }}-openjdk'
+        state: present

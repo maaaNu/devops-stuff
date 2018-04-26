@@ -1,14 +1,14 @@
-- hosts: "{{ host | default('es') }}"
+- hosts: "{{ target | default('elasticsearch') }}"
   gather_facts: False
   tasks:
   - name: Check if you are able to ping the vagrant VM
     ping:
 
-- hosts: "{{ host | default('es') }}"
+- hosts: "{{ target | default('elasticsearch') }}"
   become: true
   gather_facts: True
   vars:
-    jdk_installation_path: '/opt/java/jdk9.0.4'
+    jdk_installation_path: '/opt/java/jdk10.0.1'
     tmp_jdk_path: '/tmp/jdk'
   tasks:
    - name: 'Fetch Oracle JDK artefacts'

@@ -1,10 +1,10 @@
-- hosts: "{{ host | default('dev') }}"
+- hosts: "{{ target | default('dev') }}"
   gather_facts: False
   tasks:
   - name: Check if you are able to ping the host
     ping:
 
-- hosts: "{{ host | default('dev') }}"
+- hosts: "{{ target | default('dev') }}"
   become: true
   gather_facts: True
   tasks:
@@ -12,7 +12,7 @@
     shell: grep -n "export JAVA_HOME" /etc/profile
     register: JAVA_HOME
 
-- hosts: "{{ host | default('dev') }}"
+- hosts: "{{ target | default('dev') }}"
   become: true
   gather_facts: True
   vars:
